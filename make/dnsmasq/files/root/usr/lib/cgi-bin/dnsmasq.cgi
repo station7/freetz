@@ -13,7 +13,10 @@ check "$DNSMASQ_AVM_DNS" yes:avm_dns
 check "$DNSMASQ_WRAPPER" yes:wrapper
 check "$DNSMASQ_MULTID_RESTART" yes:multid_restart
 check "$DNSMASQ_LOG_QUERIES" yes:log_queries
+check "$DNSMASQ_LOG_DHCP" yes:log_dhcp
 check "$DNSMASQ_DNSSEC" yes:dnssec
+check "$DNSMASQ_LOG_FILE_ENABLED" yes:log_file_yes "*":log_file_no
+check "$DNSMASQ_REDIRECT_ENABLED" yes:redirect_yes "*":redirect_no
 
 sec_begin '$(lang de:"Starttyp" en:"Start type")'
 cgi_print_radiogroup_service_starttype "enabled" "$DNSMASQ_ENABLED" "" "" 0
@@ -38,8 +41,13 @@ sec_begin '$(lang de:"Anzeigen" en:"Show")'
 cat << EOF
 <ul>
 <li><a href="$(href file mod hosts)">$(lang de:"'hosts'-Datei bearbeiten" en:"edit 'hosts' file")</a></li>
-</ul>
 EOF
+if [ "$DNSMASQ_LOG_FILE_ENABLED" = "yes" ]; then
+cat << EOF
+<li><a href="$(href status dnsmasq log)">Log anzeigen</a></li>
+EOF
+fi
+echo "</ul>"
 sec_end
 
 sec_begin '$(lang de:"DNS Server" en:"DNS server")'
@@ -50,21 +58,24 @@ cat << EOF
 <p>
 <input type="hidden" name="boguspriv" value="no">
 <input id="bogus1" type="checkbox" name="boguspriv" value="yes"$boguspriv_chk><label for="bogus1"> $(lang de:"Reverse DNS-Anfragen f&uuml;r private IP-Adressen (RFC1918) nicht an andere DNS-Server (z.B. im VPN) weiterleiten." en:"Do not forward reverse DNS lookups for private IP address ranges (RFC1918).")</label><br>
+</p>
+<p>
 <input type="hidden" name="stop_dns_rebind" value="no">
 <input id="dnsrebind1" type="checkbox" name="stop_dns_rebind" value="yes"$stop_dns_rebind_chk><label for="dnsrebind1"> $(lang de:"Adressen von Upstream Nameservern ablehnen, wenn sie in privaten IP-Bereichen sind." en:"Reject addresses from upstream nameservers which are in private IP ranges.")</label><br>
+</p>
 EOF
 
 if [ "$FREETZ_PACKAGE_DNSMASQ_WITH_DNSSEC" = "y" ]; then
 cat << EOF
+<p>
 <input type="hidden" name="dnssec" value="no">
 <input id="dnssec1" type="checkbox" name="dnssec" value="yes"$dnssec_chk><label for="dnssec1"> $(lang de:"DNSSEC-Validierungen durchf&uuml;hren und DNSSEC-Daten cachen." en:"Validate DNS replies and cache DNSSEC data.")</label><br>
+</p>
 EOF
 fi
 
 cat << EOF
-<input type="hidden" name="log_queries" value="no">
-<input id="logq1" type="checkbox" name="log_queries" value="yes"$log_queries_chk><label for="logq1"> $(lang de:"Namensaufl&ouml;sung loggen." en:"Log name resolution.")</label><br>
-</p>
+
 <p>
 <input type="hidden" name="avm_dns" value="no">
 <input id="avmdns1" type="checkbox" name="avm_dns" value="yes"$avm_dns_chk><label for="avmdns1"> $(lang de:"Durch AVM/Provider zugewiesene Upstream Nameserver nutzen." en:"Use the upstream nameservers of your provider/AVM.")</label>
@@ -96,6 +107,37 @@ cat << EOF
 <input id="ethers1" type="checkbox" name="ethers" value="yes"$ethers_chk><label for="ethers1"> $(lang de:"Statische DHCP Leases aus" en:"Static DHCP leases from") <a href="$(href file mod hosts)">hosts</a> (MAC &lt;-&gt; IP)</label><br>
 <span style="font-size:10px;">($(lang de:"nur Eintr&auml;ge, die eine g&uuml;ltige IP und MAC aufweisen" en:"items with valid IP and MAC addresses only"))</span>
 </p>
+EOF
+sec_end
+
+sec_begin 'Logging'
+cat <<EOF
+<p>
+<input type="hidden" name="log_queries" value="no">
+<input id="logq1" type="checkbox" name="log_queries" value="yes"$log_queries_chk><label for="logq1"> $(lang de:"Namensaufl&ouml;sung loggen" en:"Log name resolution")</label><br>
+</p>
+<p>
+<input type="hidden" name="log_dhcp" value="no">
+<input id="logdhcp1" type="checkbox" name="log_dhcp" value="yes"$log_dhcp_chk><label for="logdhcp1"> $(lang de:"DHCP loggen" en:"Log DHCP")</label><br>
+</p>
+<p>
+<h2>$(lang de:"Logs in Datei schreiben (statt syslog)" en:"Write logs to file (instead of syslog"):</h2>
+<input id="log1" type="radio" name="log_file_enabled" value="yes"$log_file_yes_chk><label for="log1"> Aktiviert</label>
+<input id="log2" type="radio" name="log_file_enabled" value="no"$log_file_no_chk><label for="log2"> Deaktiviert</label>
+</p>
+<p>Logfile: <input type="text" name="log_file" size="40" maxlength="255" value="$(html "$DNSMASQ_LOG_FILE")"></p>
+EOF
+sec_end
+
+sec_begin 'Address blocking'
+cat <<EOF
+<p>
+<input id="redirect1" type="radio" name="redirect_enabled" value="yes"$redirect_yes_chk><label for="redirect1"> Aktiviert</label>
+<input id="redirect2" type="radio" name="redirect_enabled" value="no"$redirect_no_chk><label for="redirect2"> Deaktiviert</label>
+</p>
+<p>
+<h2>$(lang de:"Die folgenden Adressen werden auf localhost umgeleitet und sind nicht mehr erreichbar:" en:"")</h2>
+<p><textarea name="redirect_addresses" rows="5" cols="50" maxlength="255">$(html "$DNSMASQ_REDIRECT_ADDRESSES")</textarea></p>
 EOF
 sec_end
 

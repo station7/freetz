@@ -48,7 +48,16 @@ fi
 
 [ "$DNSMASQ_STOP_DNS_REBIND" = "yes" ] && echo "stop-dns-rebind"
 
+[ "$DNSMASQ_LOG_FILE_ENABLED" = "yes" ] && echo "log-facility=$DNSMASQ_LOG_FILE"
 [ "$DNSMASQ_LOG_QUERIES" = "yes" ] && echo "log-queries"
+[ "$DNSMASQ_LOG_DHCP" = "yes" ] && echo "log-dhcp"
+
+if [ "$DNSMASQ_REDIRECT_ENABLED" = "yes" ]; then
+	echo "$DNSMASQ_REDIRECT_ADDRESSES" | grep -v "^#" | while read -r addresses; do
+		[ -n "$addresses" ] && echo "address=/$addresses/127.0.0.1"
+	done
+fi
+
 
 if [ "$FREETZ_PACKAGE_DNSMASQ_WITH_DNSSEC" = "y" -a "$DNSMASQ_DNSSEC" = "yes" ]; then
 	[ -r /mod/etc/default.dnsmasq/trust-anchors.conf ] && echo "conf-file=/mod/etc/default.dnsmasq/trust-anchors.conf"

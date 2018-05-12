@@ -24,6 +24,9 @@ start() {
 	local OPTIONS="--pid-file=$PID_FILE $DNSMASQ_OPTIONS"
 	[ "$DNSMASQ_DNS_PORT" ] && OPTIONS="$OPTIONS -p $DNSMASQ_DNS_PORT"
 	modlib_startdaemon $DAEMON $OPTIONS
+	if [ "$DNSMASQ_LOG_FILE_ENABLED" = "yes" ]; then
+		modreg status $DAEMON 'Dnsmasq-Logs' log
+	fi
 }
 
 startdaemon_post() {
@@ -91,6 +94,7 @@ case $1 in
 		;;
 	stop)
 		modlib_stop
+		modunreg status $DAEMON log
 		;;
 	restart)
 		if [ "$FREETZ_AVMDAEMON_DISABLE_DNS" != "y" ]; then
