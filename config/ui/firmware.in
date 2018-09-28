@@ -79,7 +79,7 @@ choice
 
 	config FREETZ_TYPE_4020
 		select FREETZ_AVM_SOURCE_FOR_SYSTEM_TYPE_QCA956x
-		bool "4020 - EXPERIMENTAL (status: unknown)"
+		bool "4020"
 
 	comment "Fon"
 
@@ -117,6 +117,10 @@ choice
 	config FREETZ_TYPE_6842
 		select FREETZ_AVM_SOURCE_FOR_SYSTEM_TYPE_AR934x
 		bool "6842 - EXPERIMENTAL (status: unknown)"
+
+	config FREETZ_TYPE_6890
+		select FREETZ_AVM_SOURCE_FOR_SYSTEM_TYPE_GRX5
+		bool "6890 - EXPERIMENTAL (status: unknown)"
 
 
 	comment "Fon WLAN"
@@ -340,6 +344,11 @@ choice
 		select FREETZ_AVM_VERSION_06_9X
 		depends on FREETZ_AVM_HAS_FIRMWARE_06_9X
 
+	config FREETZ_TYPE_FIRMWARE_07_0X
+		bool "FRITZ!OS 07.0x - HIGHLY EXPERIMENTAL"
+		select FREETZ_AVM_VERSION_07_0X
+		depends on FREETZ_AVM_HAS_FIRMWARE_07_0X
+
 	config FREETZ_TYPE_FIRMWARE_LABOR_BETA
 		bool "FRITZ! Labor Beta - HIGHLY EXPERIMENTAL"
 		select FREETZ_AVM_VERSION_07_0X
@@ -348,12 +357,12 @@ choice
 			Enable this to use an AVM Labor firmware from the Beta branch as base for modding.
 			For more details see <http://www.avm.de/Labor/>.
 
-	config FREETZ_TYPE_FIRMWARE_LABOR_MESH
-		bool "FRITZ! Labor WLAN Mesh - HIGHLY EXPERIMENTAL"
-		select FREETZ_AVM_VERSION_06_9X
-		depends on FREETZ_AVM_HAS_FIRMWARE_LABOR_MESH && FREETZ_SHOW_ADVANCED
+	config FREETZ_TYPE_FIRMWARE_LABOR_MAINTENANCE
+		bool "FRITZ! Labor Maintenance - EXPERIMENTAL"
+		select FREETZ_AVM_VERSION_06_8X
+		depends on FREETZ_AVM_HAS_FIRMWARE_LABOR_MAINTENANCE && FREETZ_SHOW_ADVANCED
 		help
-			Enable this to use an AVM Labor firmware from the WLAN Mesh branch as base for modding.
+			Enable this to use an AVM Labor firmware from the Maintenance branch as base for modding.
 			For more details see <http://www.avm.de/Labor/>.
 
 endchoice # "Firmware version" #
@@ -362,8 +371,8 @@ if FREETZ_AVM_VERSION_06_5X_MIN
 if FREETZ_TYPE_FIRMWARE_06_5X || FREETZ_TYPE_FIRMWARE_06_8X || FREETZ_TYPE_FIRMWARE_06_9X
 	comment "UNDER DEVELOPMENT means:"
 endif
-if FREETZ_TYPE_FIRMWARE_LABOR
-	comment "HIGHLY EXPERIMENTAL means:"
+if FREETZ_TYPE_FIRMWARE_LABOR || FREETZ_TYPE_FIRMWARE_07_0X
+	comment "(HIGHLY) EXPERIMENTAL means:"
 	comment " - the box may fail to boot and you need to recover it"
 	comment " - there is a higher probability to face stability issues"
 endif
@@ -379,10 +388,13 @@ endif
 if FREETZ_SYSTEM_TYPE_GRX5
 	comment " - replace-kernel is not (yet) available"
 	comment "   because of changed bootloader format"
+if FREETZ_TYPE_FIRMWARE_LABOR || FREETZ_TYPE_FIRMWARE_07_0X
+	comment "   and missing kernel sources"
+endif
 endif
 if !FREETZ_SYSTEM_TYPE_GRX5
 	comment " - replace-kernel might not work at all"
-	comment "   or cause instability issues"
+	comment "   or cause stability issues"
 endif
 endif
 
@@ -394,7 +406,7 @@ config FREETZ_TYPE_FIRMWARE_FINAL
 config FREETZ_TYPE_FIRMWARE_LABOR
 	bool
 	default y
-	depends on FREETZ_TYPE_FIRMWARE_LABOR_BETA || FREETZ_TYPE_FIRMWARE_LABOR_MESH
+	depends on FREETZ_TYPE_FIRMWARE_LABOR_BETA || FREETZ_TYPE_FIRMWARE_LABOR_MAINTENANCE
 
 config FREETZ_TYPE_LANGUAGE
 	string

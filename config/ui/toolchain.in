@@ -10,6 +10,7 @@ choice
 	config FREETZ_DOWNLOAD_TOOLCHAIN
 		bool "Download and use precompiled toolchains"
 		depends on FREETZ_AVM_VERSION_06_9X_MAX
+		depends on !FREETZ_SYSTEM_TYPE_QCA956x
 
 	config FREETZ_BUILD_TOOLCHAIN
 		bool "Build own toolchains (requires 4GB diskspace)"
@@ -20,7 +21,7 @@ comment "Kernel toolchain options ----------------------------------"
 choice
 	prompt "Kernel binutils"
 	default FREETZ_KERNEL_BINUTILS_2_18 if FREETZ_AVM_GCC_3_4
-	default FREETZ_KERNEL_BINUTILS_2_22 if FREETZ_AVM_GCC_4_6_MIN && FREETZ_KERNEL_VERSION_2_6_32_MAX
+	default FREETZ_KERNEL_BINUTILS_2_22 if FREETZ_AVM_GCC_4_6_MIN && FREETZ_KERNEL_VERSION_2_6_39_MAX
 	default FREETZ_KERNEL_BINUTILS_2_24 if FREETZ_AVM_GCC_4_6_MIN && FREETZ_KERNEL_VERSION_3_10_MIN   && FREETZ_AVM_VERSION_06_9X_MAX
 	default FREETZ_KERNEL_BINUTILS_2_25 if FREETZ_AVM_GCC_5_MIN   && FREETZ_KERNEL_VERSION_3_10_MIN   && FREETZ_AVM_VERSION_07_0X_MIN
 
@@ -31,12 +32,12 @@ choice
 	config FREETZ_KERNEL_BINUTILS_2_22
 		bool "binutils-2.22"
 		depends on FREETZ_AVM_GCC_4_6_MIN
-		depends on FREETZ_KERNEL_VERSION_2_6_32_MAX
+		depends on FREETZ_KERNEL_VERSION_2_6_39_MAX
 
 	config FREETZ_KERNEL_BINUTILS_2_23
 		bool "binutils-2.23.2"
 		depends on FREETZ_AVM_GCC_4_6_MIN
-		depends on FREETZ_KERNEL_VERSION_2_6_32_MAX
+		depends on FREETZ_KERNEL_VERSION_2_6_39_MAX
 		depends on (FREETZ_BUILD_TOOLCHAIN || FREETZ_DL_TOOLCHAIN_OVERRIDE)
 
 	config FREETZ_KERNEL_BINUTILS_2_24
@@ -157,17 +158,17 @@ config FREETZ_TARGET_UCLIBC_REQUIRES_libubacktrace
 
 choice
 	prompt "Target binutils"
-	default FREETZ_TARGET_BINUTILS_2_22 if FREETZ_KERNEL_VERSION_2_6_32_MAX
+	default FREETZ_TARGET_BINUTILS_2_22 if FREETZ_KERNEL_VERSION_2_6_39_MAX
 	default FREETZ_TARGET_BINUTILS_2_24 if FREETZ_KERNEL_VERSION_3_10_MIN   && FREETZ_AVM_VERSION_06_9X_MAX
 	default FREETZ_TARGET_BINUTILS_2_25 if FREETZ_KERNEL_VERSION_3_10_MIN   && FREETZ_AVM_VERSION_07_0X_MIN
 
 	config FREETZ_TARGET_BINUTILS_2_22
 		bool "binutils-2.22"
-		depends on FREETZ_KERNEL_VERSION_2_6_32_MAX
+		depends on FREETZ_KERNEL_VERSION_2_6_39_MAX
 
 	config FREETZ_TARGET_BINUTILS_2_23
 		bool "binutils-2.23.2"
-		depends on FREETZ_KERNEL_VERSION_2_6_32_MAX
+		depends on FREETZ_KERNEL_VERSION_2_6_39_MAX
 		depends on (FREETZ_BUILD_TOOLCHAIN || FREETZ_DL_TOOLCHAIN_OVERRIDE)
 
 	config FREETZ_TARGET_BINUTILS_2_24
@@ -338,7 +339,8 @@ config FREETZ_STDCXXLIB
 
 config FREETZ_TARGET_CFLAGS
 	string "Target compiler flags"
-	default "-Os -pipe -Wa,--trap"
+	default "-Os -pipe -Wa,--trap" if FREETZ_TARGET_ARCH_MIPS
+	default "-Os -pipe"            if FREETZ_TARGET_ARCH_X86
 
 config FREETZ_RPATH
 	string "FREETZ_RPATH"
