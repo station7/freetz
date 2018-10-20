@@ -1,5 +1,4 @@
-# Common options for the mips target that configure can't find out
-# because we are cross-compiling.
+# Common values for all architectures
 
 # Types and sizes
 ac_cv_type_pid_t=yes
@@ -16,12 +15,13 @@ ac_cv_sizeof_ptrdiff_t=4
 ac_cv_sizeof_size_t=4
 ac_cv_sizeof_ssize_t=4
 ac_cv_sizeof_socklen_t=4
-ac_cv_sizeof_fpos_t=24
+# ac_cv_sizeof_fpos_t is architecture specific
 ac_cv_sizeof_off_t=8
 ac_cv_sizeof_stat_st_size=8
 
 # Header files
 ac_cv_header_time=yes
+
 # C Library function
 ac_cv_have_decl_malloc=yes
 ac_cv_func_calloc_0_nonnull=yes
@@ -47,18 +47,20 @@ for name in dlopen dlclose dlsym dlerror; do
 	eval ac_cv_lib_dl_$name=yes
 done
 
-# disable all epoll functions as they are known to cause problems on some boxes (probably a kernel bug, affected versions 2.6.13.x/2.6.19.x)
-ac_cv_header_sys_epoll_h=no
-ac_cv_epoll=no
-ac_cv_epoll_works=no
-ac_cv_epoll_create=no
-ac_cv_func_epoll_create=no
-ac_cv_epoll_create1=no
-ac_cv_func_epoll_create1=no
-ac_cv_epoll_ctl=no
-ac_cv_func_epoll_ctl=no
-ac_cv_epoll_wait=no
-ac_cv_func_epoll_wait=no
+if [ "${FREETZ_KERNEL_VERSION_MAJOR}" = "2.6.13" -o "${FREETZ_KERNEL_VERSION_MAJOR}" = "2.6.19" ]; then
+	# disable all epoll functions as they are known to cause problems on some boxes (probably a kernel bug, affected versions 2.6.13.x/2.6.19.x)
+	ac_cv_header_sys_epoll_h=no
+	ac_cv_epoll=no
+	ac_cv_epoll_works=no
+	ac_cv_epoll_create=no
+	ac_cv_func_epoll_create=no
+	ac_cv_epoll_create1=no
+	ac_cv_func_epoll_create1=no
+	ac_cv_epoll_ctl=no
+	ac_cv_func_epoll_ctl=no
+	ac_cv_epoll_wait=no
+	ac_cv_func_epoll_wait=no
+fi
 
 #
 # the following syscalls are supported by 2.6.32 but not by 2.6.28 (mips arch)
@@ -93,7 +95,7 @@ ac_cv_file__usr_X11R6_lib64=no
 ac_cv_file__usr_X11R6_lib=no
 
 # Linux system
-ac_cv_linux_vers=2.6.13.1
+ac_cv_linux_vers="${FREETZ_KERNEL_VERSION_MAJOR}"
 ac_cv_CAN_USE_SYSCTL=no
 
 # Other

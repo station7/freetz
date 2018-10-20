@@ -1,12 +1,12 @@
---- linux-3.10/drivers/net/avm_cpmac/common/Makefile
-+++ linux-3.10/drivers/net/avm_cpmac/common/Makefile
+--- linux-2.6.39/drivers/net/avm_cpmac/common/Makefile
++++ linux-2.6.39/drivers/net/avm_cpmac/common/Makefile
 @@ -3,7 +3,7 @@
  # Copyright (C) 2011 AVM GmbH <fritzbox_info@avm.de>
  #
  
 -AVMNET_VERSION = $(shell echo "`cat $(obj)/.avmnet-version` - `date -r $(obj)/.avmnet-version`")
-+AVMNET_VERSION = "6.285-JZ_38755_AVM_PA_MEM_OPTIDo 17. Mai 16:21:47 CEST 2018"
- 
++AVMNET_VERSION = "6.252.1.1  -  Revision 1496:3708  -  Mi 23. Aug 12:58:39 CEST 2017"
+
  obj-y	+= avmnet_config.o avmnet_common.o .avmnet-version.o
  
 @@ -17,6 +17,7 @@
