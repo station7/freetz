@@ -1,14 +1,8 @@
-AVM_SOURCE:=$(call qstrip,$(subst $(_space),\ ,$(FREETZ_DL_KERNEL_SOURCE)))
-AVM_KERNEL_VERSION:=$(subst .,\.,$(KERNEL_VERSION))
-
-AVM_UNPACK__INT_.gz:=z
-AVM_UNPACK__INT_.bz2:=j
-
 KERNEL_SUBVERSION:=iln6
+
 KERNEL_MAKE_DIR:=$(MAKE_DIR)/linux
-KERNEL_PATCHES_DIR:=$(KERNEL_MAKE_DIR)/patches/$(KERNEL_PATCHES)
-KERNEL_BUILD_DIR:=$(KERNEL_DIR)
-KERNEL_BUILD_ROOT_DIR:=$(KERNEL_BUILD_DIR)/linux-$(KERNEL_VERSION)
+KERNEL_PATCHES_DIR:=$(KERNEL_MAKE_DIR)/patches/$(KERNEL_VERSION)$(SYSTEM_TYPE_CORE_SUFFIX)
+KERNEL_BUILD_ROOT_DIR:=$(KERNEL_DIR)/linux-$(KERNEL_VERSION_MAJOR)
 
 KERNEL_IMAGE:=vmlinux.eva_pad
 KERNEL_IMAGE_BUILD_SUBDIR:=$(if $(FREETZ_KERNEL_VERSION_3_10_MIN),/arch/$(KERNEL_ARCH)/boot)
@@ -30,7 +24,9 @@ ifeq ($(strip $(FREETZ_VERBOSITY_LEVEL)),2)
 KERNEL_COMMON_MAKE_OPTIONS += V=1
 endif
 
-$(DL_FW_DIR)/$(AVM_SOURCE): | $(DL_FW_DIR)
+DL_KERNEL_SOURCE:=$(call qstrip,$(FREETZ_DL_KERNEL_SOURCE))
+
+$(DL_FW_DIR)/$(DL_KERNEL_SOURCE): | $(DL_FW_DIR)
 	@$(call _ECHO, downloading...)
 	$(DL_TOOL) $(DL_FW_DIR) $(FREETZ_DL_KERNEL_SOURCE) $(FREETZ_DL_KERNEL_SITE) $(FREETZ_DL_KERNEL_SOURCE_MD5) $(SILENT)
 
@@ -38,42 +34,18 @@ $(DL_FW_DIR)/$(AVM_SOURCE): | $(DL_FW_DIR)
 # options have changed. The safest way to achieve this is by starting over
 # with the source directory.
 kernel-unpacked: $(KERNEL_DIR)/.unpacked
-$(KERNEL_DIR)/.unpacked: $(DL_FW_DIR)/$(AVM_SOURCE) | gcc-kernel
+$(KERNEL_DIR)/.unpacked: $(DL_FW_DIR)/$(DL_KERNEL_SOURCE) | $(UNPACK_TARBALL_PREREQUISITES) gcc-kernel
 	$(RM) -r $(KERNEL_DIR)
-	mkdir -p $(KERNEL_BUILD_DIR)
-	@$(call _ECHO,checking structure... )
-	@KERNEL_SOURCE_CONTENT=$$( \
-		$(TAR) -t$(AVM_UNPACK__INT_$(suffix $(strip $(FREETZ_DL_KERNEL_SOURCE)))) -f $(DL_FW_DIR)/$(FREETZ_DL_KERNEL_SOURCE) \
-		| grep -E '(GPL-(release_)?kernel\.tar\.gz|linux-$(AVM_KERNEL_VERSION)/)$$' \
-		| head -n1 \
-	); \
-	if [ -z "$${KERNEL_SOURCE_CONTENT}" ]; then \
-		$(call ERROR,1,KERNEL_SOURCE_CONTENT is empty) \
-	else \
-		$(call _ECHO, unpacking... ) \
-		if echo "$${KERNEL_SOURCE_CONTENT}" | grep -qE 'GPL-(release_)?kernel\.tar\.gz$$'; then \
-			$(TAR)	-O $(VERBOSE) \
-				-x$(AVM_UNPACK__INT_$(suffix $(strip $(FREETZ_DL_KERNEL_SOURCE)))) \
-				-f $(DL_FW_DIR)/$(FREETZ_DL_KERNEL_SOURCE) \
-				--wildcards "*/$${KERNEL_SOURCE_CONTENT##*/}" | \
-			$(TAR)	-C $(KERNEL_BUILD_DIR) $(VERBOSE) \
-				-xz \
-				--transform="s|^.*\(linux-$(AVM_KERNEL_VERSION)/\)|\1|g" --show-transformed; \
-		else \
-			$(TAR)	-C $(KERNEL_BUILD_DIR) $(VERBOSE) \
-				-x$(AVM_UNPACK__INT_$(suffix $(strip $(FREETZ_DL_KERNEL_SOURCE)))) \
-				-f $(DL_FW_DIR)/$(FREETZ_DL_KERNEL_SOURCE) \
-				--transform="s|^.*\(linux-$(AVM_KERNEL_VERSION)/\)|\1|g" --show-transformed "$${KERNEL_SOURCE_CONTENT}"; \
-		fi \
-	fi
-	@if [ ! -d $(KERNEL_BUILD_ROOT_DIR) ]; then \
-		$(call ERROR,1,KERNEL_BUILD_ROOT_DIR has wrong structure) \
-	fi
-	@$(call _ECHO, preparing... )
+	mkdir -p $(KERNEL_BUILD_ROOT_DIR)
+	@$(call _ECHO, unpacking... )
+	@$(call UNPACK_TARBALL,$(DL_FW_DIR)/$(DL_KERNEL_SOURCE),$(KERNEL_BUILD_ROOT_DIR),1)
+	@$(call _ECHO, applying patches... )
+	#
 	#kernel version specific patches
-	@$(call APPLY_PATCHES,$(KERNEL_PATCHES_DIR),$(KERNEL_BUILD_DIR))
+	@$(call APPLY_PATCHES,$(KERNEL_PATCHES_DIR),$(KERNEL_DIR))
 	#firmware version specific patches
-	@$(call APPLY_PATCHES,$(KERNEL_PATCHES_DIR)/$(AVM_SOURCE_ID),$(KERNEL_BUILD_DIR))
+	@$(call APPLY_PATCHES,$(KERNEL_PATCHES_DIR)/$(AVM_SOURCE_ID),$(KERNEL_DIR))
+	@$(call _ECHO, preparing... )
 	@for i in $(KERNEL_LINKING_FILES); do \
 		if [ -e $(KERNEL_BUILD_ROOT_DIR)/$$i -a \
 		! -e $(KERNEL_BUILD_ROOT_DIR)/include/linux/$${i##*\/linux_} ]; then \
@@ -136,7 +108,7 @@ $(KERNEL_DIR)/.unpacked: $(DL_FW_DIR)/$(AVM_SOURCE) | gcc-kernel
 			touch $(KERNEL_BUILD_ROOT_DIR)/$$i; \
 		fi \
 	done
-	ln -s linux-$(KERNEL_VERSION) $(KERNEL_DIR)/linux
+	ln -s linux-$(KERNEL_VERSION_MAJOR) $(KERNEL_DIR)/linux
 	touch $@
 
 $(KERNEL_DIR)/.configured: $(KERNEL_DIR)/.unpacked $(KERNEL_CONFIG_FILE)
@@ -208,7 +180,7 @@ $(KERNEL_DIR)/.modules-$(SYSTEM_TYPE)$(SYSTEM_TYPE_CORE_SUFFIX): $(KERNEL_BUILD_
 $(KERNEL_MODULES_DIR)/.modules-$(SYSTEM_TYPE)$(SYSTEM_TYPE_CORE_SUFFIX): $(KERNEL_DIR)/.modules-$(SYSTEM_TYPE)$(SYSTEM_TYPE_CORE_SUFFIX)
 	$(RM) -r $(KERNEL_MODULES_DIR)/lib
 	mkdir -p $(KERNEL_MODULES_DIR)
-	$(call COPY_USING_TAR,$(KERNEL_DIR)/lib/modules/$(call qstrip,$(FREETZ_MODULES_KVER))/kernel,$(KERNEL_MODULES_DIR))
+	$(call COPY_USING_TAR,$(KERNEL_DIR)/lib/modules/$(call qstrip,$(FREETZ_KERNEL_VERSION_MODULES_SUBDIR))/kernel,$(KERNEL_MODULES_DIR))
 	touch $@
 
 kernel-precompiled: pkg-echo-start $(KERNEL_TARGET_DIR)/$(KERNEL_TARGET_BINARY) $(KERNEL_MODULES_DIR)/.modules-$(SYSTEM_TYPE)$(SYSTEM_TYPE_CORE_SUFFIX) pkg-echo-done
