@@ -16,7 +16,7 @@ script() {
 		fi.select.appendChild(option);
 	}
 	function add_presets() {
-		var ident = /^(\S+\s+){5}([^\s:[]+)/;
+		var ident = /^(\S+\s+){3}([^\s:[]+)/;
 		var collect = new Array();
 		var line = log.firstChild;
 		while (line != null) {
