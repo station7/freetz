@@ -63,6 +63,9 @@ Currently supported boxes and firmwares
 * Fritz!Box 4020
 	* 147.06.83 rev43440 (German & International)
 
+* Fritz!Box 4040 (EXPERIMENTAL)
+	* 155.07.01 rev61489 (German & International)
+
 ====== Fritz!Box Fon (5xxx) ======
 
 * Fritz!Box Fon
@@ -109,7 +112,7 @@ Currently supported boxes and firmwares
 	* 123.06.34 rev36874
 * Fritz!Box 6890 LTE (EXPERIMENTAL)
 	* 162.06.87 rev59283 (German & International)
-	* 162.06.98 rev62421 (Labor)
+	* 162.06.98 rev62525 (Labor)
 
 ====== Fritz!Box Fon WLAN (70xx) ======
 
@@ -253,6 +256,10 @@ Currently supported boxes and firmwares
 	* 113.07.01 rev61484 (International)
 
 ====== Fritz!Box Fon WLAN (75xx) ======
+
+* Fritz!Box Fon WLAN 7530 (EXPERIMENTAL)
+	* 164.07.02 rev62311
+	* 164.07.02 rev62314 (International)
 
 * Fritz!Box Fon WLAN 7560
 	* 149.06.53 rev41227

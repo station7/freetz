@@ -18,6 +18,7 @@ config FREETZ_TYPE_PREFIX
 	default "3390"              if FREETZ_TYPE_3390
 	default "3490"              if FREETZ_TYPE_3490
 	default "4020"              if FREETZ_TYPE_4020
+	default "4040"              if FREETZ_TYPE_4040
 	default "fon"               if FREETZ_TYPE_FON
 	default "5010"              if FREETZ_TYPE_5010
 	default "5050"              if FREETZ_TYPE_5050
@@ -57,6 +58,7 @@ config FREETZ_TYPE_PREFIX
 	default "7412"              if FREETZ_TYPE_7412
 	default "7430"              if FREETZ_TYPE_7430
 	default "7490"              if FREETZ_TYPE_7490
+	default "7530"              if FREETZ_TYPE_7530
 	default "7560"              if FREETZ_TYPE_7560
 	default "7570"              if FREETZ_TYPE_7570
 	default "7580"              if FREETZ_TYPE_7580
